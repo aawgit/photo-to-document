@@ -1,17 +1,29 @@
 import cv2
-import numpy as np
-from matplotlib import pyplot as plt
+import imutils
 
-img = cv2.imread('../../images/WhatsApp Image 2020-06-26 at 22.21.45 (1).jpeg')
-rows,cols,ch = img.shape
+def get_edged(image):
+	gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+	gray = cv2.GaussianBlur(gray, (5, 5), 0)
+	edged = cv2.Canny(gray, 75, 200)
+	return edged
 
-pts1 = np.float32([[56,65],[368,52],[28,387],[389,390]])
-pts2 = np.float32([[0,0],[300,0],[0,300],[300,300]])
-
-M = cv2.getPerspectiveTransform(pts1,pts2)
-
-dst = cv2.warpPerspective(img,M,(300,300))
-
-plt.subplot(121),plt.imshow(img),plt.title('Input')
-plt.subplot(122),plt.imshow(dst),plt.title('Output')
-plt.show()
+def get_screen_contour(edged):
+	cnts = cv2.findContours(edged.copy(), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+	cnts = imutils.grab_contours(cnts)
+	cnts = sorted(cnts, key = cv2.contourArea, reverse = True)[:5]
+	# loop over the contours
+	screenCnt = None
+	for c in cnts:
+		# approximate the contour
+		peri = cv2.arcLength(c, True)
+		approx = cv2.approxPolyDP(c, 0.02 * peri, True)
+		# if our approximated contour has four points, then we
+		# can assume that we have found our screen
+		if len(approx) == 4:
+			screenCnt = approx
+			break
+	# show the contour (outline) of the piece of paper
+	if screenCnt is None:
+		raise Exception('Borders of the document could not be determined. ')
+	print("STEP 2: Find contours of paper")
+	return screenCnt.reshape(4, 2)
