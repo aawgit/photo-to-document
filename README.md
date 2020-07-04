@@ -28,4 +28,4 @@ Success 4 - PDF converted:
 ![Success](documentation/pdf.png)
 
 ## Acknowledgement:
-Initial version transform.py is from https://www.pyimagesearch.com/2014/08/25/4-point-opencv-getperspective-transform-example/
+Initial code for identifying margins and transformatio was based on https://www.pyimagesearch.com/2014/08/25/4-point-opencv-getperspective-transform-example/
