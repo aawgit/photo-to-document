@@ -1,3 +1,4 @@
+import io
 import logging
 import os
 
@@ -9,6 +10,27 @@ import img2pdf
 
 from src.modules.transform import four_point_transform
 from src.modules.image_tools import get_edged, get_screen_contour
+
+
+def transform_convert_and_save(images, target_file_name, bnw=False, size='A4'):
+    pdf_bytes = transform_and_convert(images, bnw=bnw)
+    pdf_location = os.getenv('PDF_DIR', '../../images/output/')
+    save_to_pdf(pdf_bytes, pdf_location + '/{}.pdf'.format(target_file_name))
+
+
+def transform_and_convert(images, bnw=False, size='A4'):
+    tf_image_io_buffers = []
+    for image in images:
+        tf_image = get_transformed_image(image, bnw=bnw)
+        tf_image = resize_image(tf_image)
+        if tf_image is not None:
+            is_success, buffer = cv2.imencode(".jpg", tf_image)
+            io_buf = io.BytesIO(buffer)
+            tf_image_io_buffers.append(io_buf)
+
+    if len(tf_image_io_buffers) >= 1:
+        pdf_bytes = convert_to_pdf(tf_image_io_buffers)
+        return pdf_bytes
 
 
 def get_transformed_image(image, bnw=False, plotting=False):
@@ -33,11 +55,11 @@ def get_transformed_image(image, bnw=False, plotting=False):
             # convert the warped image to grayscale, then threshold it
             # to give it that 'black and white' paper effect
             warped = cv2.cvtColor(warped, cv2.COLOR_BGR2GRAY)
-            T = threshold_local(warped, 11, offset = 10, method = "gaussian")
+            T = threshold_local(warped, 11, offset=10, method="gaussian")
             warped = (warped > T).astype("uint8") * 255
 
         if plotting:
-            plt.subplot(224), plt.imshow(warped, cmap='gray', vmin = 0, vmax = 255), plt.title('Transformed')
+            plt.subplot(224), plt.imshow(warped, cmap='gray', vmin=0, vmax=255), plt.title('Transformed')
 
         # TODO:
         # Auto detect real page ratio
@@ -51,18 +73,26 @@ def get_transformed_image(image, bnw=False, plotting=False):
     finally:
         plt.show()
 
-def convert_to_pdf(image_file_path, pdf_file_path):
-    pdf_bytes = img2pdf.convert((image_file_path,), dpi=150, x=None, y=None)
-    with open(pdf_file_path,"wb") as f:
+def resize_image(image):
+    dim = (1754, 2480)
+    resized = cv2.resize(image, dim, interpolation=cv2.INTER_AREA)
+    return resized
+
+def save_to_pdf(pdf_bytes, pdf_file_path):
+    with open(pdf_file_path, "wb") as f:
         f.write(pdf_bytes)
+
+
+def convert_to_pdf(io_buf):
+    return img2pdf.convert((io_buf), dpi=150, x=None, y=None)
+
 
 if __name__ == "__main__":
     # For testing/ debugging image processing without the api
     image_location = os.getenv('IMAGE_DIR', '../../images/input/')
-    tf_image_location = os.getenv('TF_IMAGE_DIR', '../../images/output/')
-    file_name = 'IMG_20200704_143727.jpg'
-    image = cv2.imread(image_location + file_name)
-    tf_image = get_transformed_image(image, bnw=False, plotting=False)
-    pdf_location = os.getenv('PDF_DIR', '../../images/output/')
-    cv2.imwrite(tf_image_location + file_name, tf_image)
-    convert_to_pdf(tf_image_location + file_name, pdf_location + '/{}.pdf'.format(file_name[:-4]))
+    file_names = ['IMG_20200704_143701.jpg', 'IMG_20200704_143742.jpg']
+    images = []
+    for file_name in file_names:
+        image = cv2.imread(image_location + file_name)
+        images.append(image)
+    transform_convert_and_save(images, file_names[0][:-4], bnw=True, size='A4')
