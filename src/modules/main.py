@@ -1,4 +1,3 @@
-import io
 import logging
 import os
 
@@ -7,9 +6,24 @@ import imutils
 from skimage.filters import threshold_local
 from matplotlib import pyplot as plt
 import img2pdf
+import numpy
+import io
 
 from src.modules.transform import four_point_transform
 from src.modules.image_tools import get_edged, get_screen_contour
+
+
+def fetch_files_and_convert(filestrs):
+    images = []
+    for filestr in filestrs:
+        npimg = numpy.fromstring(filestr, numpy.uint8)
+        # convert numpy array to image
+        img = cv2.imdecode(npimg, cv2.IMREAD_UNCHANGED)
+        images.append(img)
+    pdf_bytes = transform_and_convert(images)
+    temp = io.BytesIO()
+    temp.write(pdf_bytes)
+    return temp.getvalue()
 
 
 def transform_convert_and_save(images, target_file_name, bnw=False, size='A4'):
@@ -73,10 +87,12 @@ def get_transformed_image(image, bnw=False, plotting=False):
     finally:
         plt.show()
 
+
 def resize_image(image):
     dim = (1754, 2480)
     resized = cv2.resize(image, dim, interpolation=cv2.INTER_AREA)
     return resized
+
 
 def save_to_pdf(pdf_bytes, pdf_file_path):
     with open(pdf_file_path, "wb") as f:
@@ -85,14 +101,3 @@ def save_to_pdf(pdf_bytes, pdf_file_path):
 
 def convert_to_pdf(io_buf):
     return img2pdf.convert((io_buf), dpi=150, x=None, y=None)
-
-
-if __name__ == "__main__":
-    # For testing/ debugging image processing without the api
-    image_location = os.getenv('IMAGE_DIR', '../../images/input/')
-    file_names = ['IMG_20200704_143701.jpg', 'IMG_20200704_143742.jpg']
-    images = []
-    for file_name in file_names:
-        image = cv2.imread(image_location + file_name)
-        images.append(image)
-    transform_convert_and_save(images, file_names[0][:-4], bnw=True, size='A4')
