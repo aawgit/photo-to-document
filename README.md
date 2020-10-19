@@ -1,12 +1,13 @@
 # Photo to document
-Convert images to documents (PDF) including Perspective Transformation
+Convert images to documents (PDF) including Perspective Transformation. There is a HTTP API implemented with Flask, for feeding image files.
 
 ## Installation and running
 - Clone the repo and open 'photo-to-document' directory
 - Create and activate the virtual environment
 - run `pip install -r requirements.txt`
 - _(Optional) Set env variables IMAGE_DIR, TF_IMAGE_DIR, and PDF_DIR_
-- run main.py
+- Run `python app.py`
+- Upload an array of image files to localhost:5000/images with a POST request with 'files' as the key name
 
 ## Results
 Contour finding fail 1:
