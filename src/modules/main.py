@@ -9,8 +9,8 @@ import img2pdf
 import numpy
 import io
 
-from src.modules.transform import four_point_transform
-from src.modules.image_tools import get_edged, get_screen_contour
+from .transform import four_point_transform
+from .image_tools import get_edged, get_screen_contour
 
 
 def fetch_files_and_convert(filestrs):
