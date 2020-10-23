@@ -1,5 +1,7 @@
 # Photo to document
-Convert images to documents (PDF) including Perspective Transformation. There is a HTTP API implemented with Flask, for feeding image files.
+Convert images to documents (PDF) including Perspective Transformation. There is a HTTP API implemented with Flask, for feeding image files.#
+
+# *****************************************************************************************************************
 
 ## Installation and running
 - Clone the repo and open 'photo-to-document' directory
