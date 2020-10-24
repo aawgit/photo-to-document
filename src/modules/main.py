@@ -9,8 +9,7 @@ import img2pdf
 import numpy
 import io
 
-from .transform import four_point_transform
-from .image_tools import get_edged, get_screen_contour
+from .image_tools import get_edged, get_screen_contour, four_point_transform
 
 
 def fetch_files_and_convert(filestrs):
@@ -35,7 +34,7 @@ def transform_convert_and_save(images, target_file_name, bnw=False, size='A4'):
 def transform_and_convert(images, bnw=False, size='A4'):
     tf_image_io_buffers = []
     for image in images:
-        tf_image = get_transformed_image(image, bnw=bnw)
+        tf_image = transform_image(image, bnw=bnw)
         tf_image = resize_image(tf_image)
         if tf_image is not None:
             is_success, buffer = cv2.imencode(".jpg", tf_image)
@@ -47,7 +46,7 @@ def transform_and_convert(images, bnw=False, size='A4'):
         return pdf_bytes
 
 
-def get_transformed_image(image, bnw=False, plotting=False):
+def transform_image(image, bnw=False, plotting=False):
     try:
         ratio = image.shape[0] / 500.0
         orig = image.copy()
