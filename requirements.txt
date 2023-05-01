@@ -1,7 +1,7 @@
 click==7.1.2
 cycler==0.10.0
 decorator==4.4.2
-Flask==1.1.2
+Flask==2.3.2
 Flask-Cors==3.0.9
 imageio==2.8.0
 img2pdf==0.3.6
